@@ -94,32 +94,37 @@ export function parseScheduleRequest(text: string): {
 } {
   const lowerText = text.toLowerCase();
 
-  // Check availability intent
+  // Check availability intent (English + Japanese)
   if (
     lowerText.includes('available') ||
     lowerText.includes('availability') ||
-    lowerText.includes('free')
+    lowerText.includes('free') ||
+    text.includes('空いて') ||
+    text.includes('空き')
   ) {
     const dateMatch = text.match(/(\d{4}-\d{2}-\d{2})/);
-    const timeRangeMatch = text.match(/(\d{1,2}:\d{2})\s*(?:to|-)\s*(\d{1,2}:\d{2})/);
+    const timeRangeMatch = text.match(/(\d{1,2}:\d{2})\s*(?:to|-|から)\s*(\d{1,2}:\d{2})/);
+    const todayMatch = lowerText.includes('today') || text.includes('今日');
 
     return {
       intent: 'check-availability',
       params: {
-        date: dateMatch?.[1],
+        date: dateMatch?.[1] || (todayMatch ? 'today' : undefined),
         startTime: timeRangeMatch?.[1],
         endTime: timeRangeMatch?.[2],
       },
     };
   }
 
-  // Get busy slots intent
+  // Get busy slots intent (English + Japanese)
   if (
     lowerText.includes('busy') ||
-    lowerText.includes('schedule') && (lowerText.includes('show') || lowerText.includes('get') || lowerText.includes('what'))
+    (lowerText.includes('schedule') && (lowerText.includes('show') || lowerText.includes('get') || lowerText.includes('what'))) ||
+    text.includes('予定') ||
+    text.includes('スケジュール')
   ) {
     const dateMatch = text.match(/(\d{4}-\d{2}-\d{2})/);
-    const todayMatch = lowerText.includes('today');
+    const todayMatch = lowerText.includes('today') || text.includes('今日');
 
     return {
       intent: 'get-busy-slots',
@@ -129,16 +134,18 @@ export function parseScheduleRequest(text: string): {
     };
   }
 
-  // Schedule meeting intent
+  // Schedule meeting intent (English + Japanese)
   if (
     lowerText.includes('schedule') ||
     lowerText.includes('book') ||
-    lowerText.includes('create meeting')
+    lowerText.includes('create meeting') ||
+    text.includes('予約') ||
+    text.includes('登録')
   ) {
     const dateMatch = text.match(/(\d{4}-\d{2}-\d{2})/);
-    const timeRangeMatch = text.match(/(\d{1,2}:\d{2})\s*(?:to|-)\s*(\d{1,2}:\d{2})/);
-    const singleTimeMatch = text.match(/at\s+(\d{1,2}:\d{2})/);
-    const titleMatch = text.match(/['"]([^'"]+)['"]/);
+    const timeRangeMatch = text.match(/(\d{1,2}:\d{2})\s*(?:to|-|から)\s*(\d{1,2}:\d{2})/);
+    const singleTimeMatch = text.match(/(?:at|に)\s*(\d{1,2}:\d{2})/);
+    const titleMatch = text.match(/[「『'"]([^」』'"]+)[」』'"]/);
 
     return {
       intent: 'schedule-meeting',
