@@ -43,10 +43,10 @@ export function checkAvailability(
 
   if (params.startTime && params.endTime) {
     if (availability.available) {
-      message = `Available on ${date} from ${params.startTime} to ${params.endTime}.`;
+      message = `${date} の ${params.startTime} から ${params.endTime} は空いています。`;
       status = 'available';
     } else {
-      message = `Not available on ${date} from ${params.startTime} to ${params.endTime}.`;
+      message = `${date} の ${params.startTime} から ${params.endTime} は予定があります。`;
       status = 'busy';
     }
   } else {
@@ -55,10 +55,10 @@ export function checkAvailability(
       const freeTimesList = availability.freeSlots
         .map((slot) => `${slot.startTime}-${slot.endTime}`)
         .join(', ');
-      message = `Available times on ${date}: ${freeTimesList}`;
+      message = `${date} の空き時間: ${freeTimesList}`;
       status = 'available';
     } else {
-      message = `Fully booked on ${date}.`;
+      message = `${date} は終日予定が入っています。`;
       status = 'busy';
     }
   }

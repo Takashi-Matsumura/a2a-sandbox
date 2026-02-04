@@ -33,7 +33,7 @@ export function scheduleMeeting(
   if (conflict) {
     return {
       success: false,
-      message: `Cannot schedule meeting "${params.title}" on ${date} from ${params.startTime} to ${params.endTime}. There is a scheduling conflict.`,
+      message: `「${params.title}」を ${date} の ${params.startTime} から ${params.endTime} に予約できません。スケジュールが重複しています。`,
       conflict: true,
     };
   }
@@ -53,7 +53,7 @@ export function scheduleMeeting(
   return {
     success: true,
     meetingId: schedule.id,
-    message: `Successfully scheduled "${params.title}" on ${date} from ${params.startTime} to ${params.endTime}.`,
+    message: `「${params.title}」を ${date} の ${params.startTime} から ${params.endTime} に予約しました。`,
   };
 }
 

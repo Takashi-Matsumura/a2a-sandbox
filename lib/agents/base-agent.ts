@@ -182,7 +182,7 @@ export class BaseAgent implements AgentExecutor {
       case 'schedule-meeting':
         if (!params.title || !params.startTime) {
           return this.createInputRequiredResponse(
-            'Please provide the meeting title and time.'
+            '会議のタイトルと時間を指定してください。'
           );
         }
         return this.executeScheduleMeeting({
@@ -232,11 +232,11 @@ export class BaseAgent implements AgentExecutor {
     context: ExecutionContext
   ): AgentResponse {
     const agentData = getAgentById(this.config.id);
-    const greeting = `Hello! I'm ${this.config.name}'s assistant. I can help you with:\n\n` +
-      '• Checking availability for specific times\n' +
-      '• Viewing busy time slots for a day\n' +
-      '• Scheduling meetings\n\n' +
-      'How can I help you today?';
+    const greeting = `こんにちは！${this.config.name}のアシスタントです。以下のことができます：\n\n` +
+      '• 特定の時間帯の空き状況を確認\n' +
+      '• 1日の予定を表示\n' +
+      '• 会議のスケジュール登録\n\n' +
+      '何かお手伝いできることはありますか？';
 
     return this.createSuccessResponse(greeting);
   }
@@ -281,9 +281,9 @@ export class BaseAgent implements AgentExecutor {
   protected executeGetBusySlots(params: { date: string }): AgentResponse {
     const result = getBusySlots(this.config.id, params.date);
 
-    let text = `Busy times on ${result.date}:\n`;
+    let text = `${result.date} の予定：\n`;
     if (result.busySlots.length === 0) {
-      text = `No scheduled events on ${result.date}. The calendar is clear!`;
+      text = `${result.date} には予定がありません。終日空いています！`;
     } else {
       for (const slot of result.busySlots) {
         const title = slot.title ? ` - ${slot.title}` : '';
@@ -292,7 +292,7 @@ export class BaseAgent implements AgentExecutor {
     }
 
     if (result.freeSlots.length > 0) {
-      text += `\nFree time slots:\n`;
+      text += `\n空き時間：\n`;
       for (const slot of result.freeSlots) {
         text += `• ${slot.startTime} - ${slot.endTime}\n`;
       }
