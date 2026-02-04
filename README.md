@@ -112,6 +112,37 @@ A2A Protocol は柔軟な通信パターンをサポートしています：
 
 個別のエージェントと対話して、その機能を試すことができます。
 
+#### チャットの使用例
+
+日本語・英語の両方に対応しています。
+
+**予定を確認する（get-busy-slots）**
+```
+今日の予定を教えて
+今日のスケジュールは？
+What times are you busy today?
+```
+
+**空き状況を確認する（check-availability）**
+```
+今日の14:00から15:00は空いていますか？
+Are you available from 14:00 to 15:00 today?
+```
+
+**会議を予約する（schedule-meeting）**
+```
+「チームミーティング」を14:00から15:00に予約
+Schedule meeting "Team Sync" today from 14:00 to 15:00
+```
+
+#### 認識されるキーワード
+
+| 機能 | 日本語キーワード | 英語キーワード |
+|------|----------------|---------------|
+| 予定確認 | 予定、スケジュール | busy, schedule |
+| 空き確認 | 空いて、空き | available, free |
+| 会議予約 | 予約、登録 | schedule, book |
+
 ### 3. Agent Card の確認
 
 A2A Protocol 仕様に基づくエージェントのメタデータを確認できます。
