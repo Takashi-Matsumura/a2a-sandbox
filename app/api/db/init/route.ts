@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { initializeSchema, resetDatabase, isDatabaseInitialized } from '@/lib/db/schema';
-import { seedDatabase, getSeedSummary } from '@/lib/db/seed';
+import { seedDatabase, seedDebateAgents, getSeedSummary } from '@/lib/db/seed';
 
 /**
  * GET /api/db/init
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     if (reset) {
       resetDatabase();
       seedDatabase();
+      seedDebateAgents();
       return NextResponse.json({
         success: true,
         message: 'Database reset and seeded successfully',
@@ -47,6 +48,8 @@ export async function POST(request: Request) {
 
     const initialized = isDatabaseInitialized();
     if (initialized) {
+      // Seed debate agents if they don't exist yet
+      seedDebateAgents();
       return NextResponse.json({
         success: true,
         message: 'Database already initialized',
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
 
     initializeSchema();
     seedDatabase();
+    seedDebateAgents();
 
     return NextResponse.json({
       success: true,

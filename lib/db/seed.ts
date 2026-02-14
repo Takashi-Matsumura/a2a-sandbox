@@ -206,6 +206,54 @@ export function seedDatabase(): void {
 }
 
 /**
+ * Seed debate agents (can be run on an already-seeded database)
+ */
+export function seedDebateAgents(): void {
+  const db = getDatabase();
+  initializeSchema();
+
+  // Check if pro-kun already exists
+  const existing = db.prepare('SELECT COUNT(*) as count FROM agents WHERE id = ?').get('pro-kun') as { count: number };
+  if (existing.count > 0) {
+    return;
+  }
+
+  const insertAgent = db.prepare(`
+    INSERT INTO agents (id, name, description, endpoint, avatar_color)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  const debateAgents = [
+    {
+      id: 'pro-kun',
+      name: '賛成くん',
+      description: 'ディベートで賛成派の立場を担当するエージェント。どんなテーマでも賛成の立場から論理的に主張します。',
+      endpoint: '/api/agents/pro-kun',
+      avatarColor: '#f97316', // orange
+    },
+    {
+      id: 'con-kun',
+      name: '反対くん',
+      description: 'ディベートで反対派の立場を担当するエージェント。どんなテーマでも反対の立場から論理的に主張します。',
+      endpoint: '/api/agents/con-kun',
+      avatarColor: '#8b5cf6', // purple
+    },
+  ];
+
+  for (const agent of debateAgents) {
+    insertAgent.run(
+      agent.id,
+      agent.name,
+      agent.description,
+      agent.endpoint,
+      agent.avatarColor
+    );
+  }
+
+  console.log('Debate agents seeded successfully');
+}
+
+/**
  * Get seeded data summary
  */
 export function getSeedSummary(): { agents: number; schedules: number } {

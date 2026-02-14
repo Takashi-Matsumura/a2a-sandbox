@@ -3,6 +3,8 @@ import { BaseAgent } from './base-agent';
 import { getAliceAgent } from './alice';
 import { getBobAgent } from './bob';
 import { getCarolAgent } from './carol';
+import { getProKunAgent } from './pro-kun';
+import { getConKunAgent } from './con-kun';
 
 /**
  * Agent registry for managing multiple agents
@@ -15,6 +17,8 @@ class AgentRegistry {
     this.register(getAliceAgent());
     this.register(getBobAgent());
     this.register(getCarolAgent());
+    this.register(getProKunAgent());
+    this.register(getConKunAgent());
   }
 
   /**

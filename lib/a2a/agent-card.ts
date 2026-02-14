@@ -180,6 +180,87 @@ export const STANDARD_SKILLS: Record<string, AgentSkill> = {
       required: ['success', 'message'],
     } as JsonSchema,
   },
+  'debate-argue': {
+    id: 'debate-argue',
+    name: 'Debate Argue',
+    description: 'Present an argument for or against a given topic based on the agent\'s assigned stance.',
+    tags: ['debate', 'argument'],
+    examples: [
+      'Present your argument about remote work',
+      'Argue your position on AI regulation',
+    ],
+    inputModes: ['data'],
+    outputModes: ['text', 'data'],
+    inputSchema: {
+      type: 'object',
+      properties: {
+        topic: {
+          type: 'string',
+          description: 'The debate topic',
+        },
+      },
+      required: ['topic'],
+    } as JsonSchema,
+    outputSchema: {
+      type: 'object',
+      properties: {
+        stance: {
+          type: 'string',
+          enum: ['pro', 'con'],
+          description: 'The agent\'s stance',
+        },
+        argument: {
+          type: 'string',
+          description: 'The generated argument text',
+        },
+        perspective: {
+          type: 'string',
+          description: 'The perspective used (ethics, practical, economic, innovation)',
+        },
+      },
+      required: ['stance', 'argument'],
+    } as JsonSchema,
+  },
+  'debate-rebut': {
+    id: 'debate-rebut',
+    name: 'Debate Rebut',
+    description: 'Present a rebuttal to the opponent\'s argument on the given topic.',
+    tags: ['debate', 'rebuttal'],
+    examples: [
+      'Rebut the opponent\'s argument about remote work',
+    ],
+    inputModes: ['data'],
+    outputModes: ['text', 'data'],
+    inputSchema: {
+      type: 'object',
+      properties: {
+        topic: {
+          type: 'string',
+          description: 'The debate topic',
+        },
+        opponentArgument: {
+          type: 'string',
+          description: 'The opponent\'s argument to rebut',
+        },
+      },
+      required: ['topic', 'opponentArgument'],
+    } as JsonSchema,
+    outputSchema: {
+      type: 'object',
+      properties: {
+        stance: {
+          type: 'string',
+          enum: ['pro', 'con'],
+          description: 'The agent\'s stance',
+        },
+        rebuttal: {
+          type: 'string',
+          description: 'The generated rebuttal text',
+        },
+      },
+      required: ['stance', 'rebuttal'],
+    } as JsonSchema,
+  },
 };
 
 /**

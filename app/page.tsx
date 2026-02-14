@@ -121,7 +121,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+      <div className="grid gap-6 lg:grid-cols-3 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>会議スケジューリングデモ</CardTitle>
@@ -130,8 +130,22 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/demo">
+            <Link href="/demo/schedule">
               <Button className="w-full">デモを開始</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>ディベートデモ</CardTitle>
+            <CardDescription>
+              賛成くんと反対くんがA2A Protocolを通じてディベートする様子をリアルタイムで体験しましょう
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/demo/debate">
+              <Button className="w-full">ディベートを開始</Button>
             </Link>
           </CardContent>
         </Card>
