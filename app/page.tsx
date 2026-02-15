@@ -138,13 +138,13 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>ディベートデモ</CardTitle>
+            <CardTitle>ディベートショー</CardTitle>
             <CardDescription>
-              賛成くんと反対くんがA2A Protocolを通じてディベートする様子をリアルタイムで体験しましょう
+              賛成くん vs 反対くんのエンタメ版ディベート! テーマを選んでステージ上の対決を楽しもう
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/demo/debate">
+            <Link href="/demo/debate-show">
               <Button className="w-full">ディベートを開始</Button>
             </Link>
           </CardContent>

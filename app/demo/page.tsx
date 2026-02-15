@@ -16,8 +16,17 @@ const demos = [
     color: 'bg-indigo-500',
   },
   {
+    id: 'debate-show',
+    title: 'ディベートショー',
+    description:
+      '賛成くん vs 反対くんのエンタメ版ディベート! テーマを選んで、ステージ上でのエージェント対決を楽しもう。吹き出しアニメーションで臨場感あふれる体験。',
+    href: '/demo/debate-show',
+    tags: ['Entertainment', 'Debate', 'Visual'],
+    color: 'bg-pink-500',
+  },
+  {
     id: 'debate',
-    title: 'エージェントディベート',
+    title: 'エージェントディベート（技術版）',
     description:
       '賛成くんと反対くんの2エージェントがA2A Protocolを通じてディベートを行います。テーマを入力すると、主張・反論の過程をリアルタイムで可視化します。',
     href: '/demo/debate',
@@ -40,7 +49,7 @@ export default function DemoHubPage() {
       </div>
 
       {/* Demo Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {demos.map((demo) => (
           <Card key={demo.id} className="hover:border-indigo-300 hover:shadow-md transition-all">
             <CardHeader>
