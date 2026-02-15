@@ -9,6 +9,8 @@ import { generateSummary } from '@/lib/agents/debate/templates';
 type Phase = 'select' | 'battle' | 'result';
 type Round = 1 | 2 | 3; // 1=主張, 2=反論, 3=Final
 type Speaker = 'pro' | 'con' | null;
+type Volume = 'concise' | 'unlimited';
+type Persona = 'elementary' | 'highschool' | 'university' | 'adult' | 'executive' | 'researcher';
 
 interface SpeechBubble {
   id: string;
@@ -59,6 +61,20 @@ const ROUND_LABELS: Record<Round, string> = {
   3: 'Final - まとめ',
 };
 
+const PERSONA_OPTIONS: { value: Persona; label: string; emoji: string }[] = [
+  { value: 'elementary', label: '小学生', emoji: '🎒' },
+  { value: 'highschool', label: '中高生', emoji: '📖' },
+  { value: 'university', label: '大学生', emoji: '🎓' },
+  { value: 'adult', label: '大人', emoji: '👔' },
+  { value: 'executive', label: '経営者', emoji: '💼' },
+  { value: 'researcher', label: '研究者', emoji: '🔬' },
+];
+
+const VOLUME_OPTIONS: { value: Volume; label: string }[] = [
+  { value: 'concise', label: '簡潔に' },
+  { value: 'unlimited', label: '制限なし' },
+];
+
 // ─── Helpers (reused from existing debate demo) ─────────
 
 function extractAgentText(response: Record<string, unknown>): string | undefined {
@@ -76,7 +92,9 @@ async function generateDebateSummary(
   topic: string,
   proArgs: string[],
   conArgs: string[],
+  vol: Volume = 'unlimited',
 ): Promise<string> {
+  const volumeHint = vol === 'concise' ? '150〜250文字程度で簡潔にまとめてください。' : '300〜500文字程度でまとめてください。';
   try {
     const res = await fetch('/api/llm', {
       method: 'POST',
@@ -86,7 +104,7 @@ async function generateDebateSummary(
           {
             role: 'system',
             content:
-              'あなたはディベートの司会者です。両者の議論を公平にまとめてください。必ず日本語で回答してください。300〜500文字程度で簡潔にまとめてください。',
+              `あなたはディベートの司会者です。両者の議論を公平にまとめてください。必ず日本語で回答してください。${volumeHint}`,
           },
           {
             role: 'user',
@@ -94,7 +112,7 @@ async function generateDebateSummary(
           },
         ],
         temperature: 0.7,
-        maxTokens: 600,
+        maxTokens: vol === 'concise' ? 350 : 600,
       }),
     });
     const data = await res.json();
@@ -235,6 +253,8 @@ export default function DebateShowPage() {
   const [showProtocol, setShowProtocol] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [volume, setVolume] = useState<Volume>('unlimited');
+  const [persona, setPersona] = useState<Persona>('adult');
 
   const addProtocolMessage = useCallback((msg: ProtocolMessage) => {
     setProtocolMessages((prev) => [...prev, msg]);
@@ -342,19 +362,20 @@ export default function DebateShowPage() {
 
       // Round 1: 主張
       setRound(1);
-      const proArg = await speak('pro', 'debate-argue', { topic: theme.topic }, 1, 'argue');
+      const baseParams = { topic: theme.topic, persona, volume };
+      const proArg = await speak('pro', 'debate-argue', baseParams, 1, 'argue');
       proArgs.push(proArg);
       await sleep(300);
-      const conArg = await speak('con', 'debate-argue', { topic: theme.topic }, 1, 'argue');
+      const conArg = await speak('con', 'debate-argue', baseParams, 1, 'argue');
       conArgs.push(conArg);
       await sleep(500);
 
       // Round 2: 反論
       setRound(2);
-      const proRebut = await speak('pro', 'debate-rebut', { topic: theme.topic, opponentArgument: conArg }, 2, 'rebut');
+      const proRebut = await speak('pro', 'debate-rebut', { ...baseParams, opponentArgument: conArg }, 2, 'rebut');
       proArgs.push(proRebut);
       await sleep(300);
-      const conRebut = await speak('con', 'debate-rebut', { topic: theme.topic, opponentArgument: proArg }, 2, 'rebut');
+      const conRebut = await speak('con', 'debate-rebut', { ...baseParams, opponentArgument: proArg }, 2, 'rebut');
       conArgs.push(conRebut);
       await sleep(500);
 
@@ -374,7 +395,7 @@ export default function DebateShowPage() {
         }),
       );
 
-      const summary = await generateDebateSummary(theme.topic, proArgs, conArgs);
+      const summary = await generateDebateSummary(theme.topic, proArgs, conArgs, volume);
       setSummaryText(summary);
 
       addProtocolMessage(
@@ -427,6 +448,56 @@ export default function DebateShowPage() {
           </p>
         </div>
 
+        {/* Settings */}
+        <div className="mb-8 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+          <h2 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-4">設定</h2>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* Volume */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                回答のボリューム
+              </label>
+              <div className="flex gap-2">
+                {VOLUME_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setVolume(opt.value)}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      volume === opt.value
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Persona */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                ディベーターの立場
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PERSONA_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setPersona(opt.value)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      persona === opt.value
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {opt.emoji} {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Theme cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {THEMES.map((theme) => (
             <button
@@ -470,6 +541,14 @@ export default function DebateShowPage() {
           </h1>
           <div className="mt-3 inline-block px-4 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
             {ROUND_LABELS[round]}
+          </div>
+          <div className="mt-2 flex justify-center gap-2">
+            <span className="inline-block px-2 py-0.5 rounded text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+              {PERSONA_OPTIONS.find((p) => p.value === persona)?.emoji} {PERSONA_OPTIONS.find((p) => p.value === persona)?.label}
+            </span>
+            <span className="inline-block px-2 py-0.5 rounded text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+              {volume === 'concise' ? '簡潔' : '制限なし'}
+            </span>
           </div>
         </div>
 

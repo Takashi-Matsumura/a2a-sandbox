@@ -24,20 +24,45 @@ const STANCE_LABEL: Record<Stance, string> = {
   con: '反対',
 };
 
+type Persona = 'elementary' | 'highschool' | 'university' | 'adult' | 'executive' | 'researcher';
+type Volume = 'concise' | 'unlimited';
+
+const PERSONA_PROMPT: Record<Persona, string> = {
+  elementary: '小学生のように、わかりやすくシンプルな言葉で話してください。難しい漢字や専門用語は避けてください。',
+  highschool: '中高生のように、若者らしい視点と言葉遣いで話してください。身近な例を使って説明してください。',
+  university: '大学生のように、学術的な視点も交えつつ、論理的に議論してください。',
+  adult: '社会人として、バランスの取れた実践的な視点で議論してください。',
+  executive: '経営者の視点から、ビジネスインパクト・戦略・組織運営の観点を重視して議論してください。',
+  researcher: '研究者として、エビデンスやデータに基づいた厳密な論理で議論してください。学術的な用語を適切に使用してください。',
+};
+
+const VOLUME_PROMPT: Record<Volume, string> = {
+  concise: '100〜200文字程度で簡潔にまとめてください。要点のみを述べてください。',
+  unlimited: '200〜400文字程度でまとめてください。',
+};
+
 /**
  * Build a system prompt for the debate agent
  */
-function buildDebateSystemPrompt(name: string, stance: Stance): string {
+function buildDebateSystemPrompt(
+  name: string,
+  stance: Stance,
+  persona: Persona = 'adult',
+  volume: Volume = 'unlimited',
+): string {
   const stanceLabel = STANCE_LABEL[stance];
   return `あなたは「${name}」という名前のディベートエージェントです。
 あなたの役割は、与えられたテーマに対して常に「${stanceLabel}」の立場から議論することです。
+
+キャラクター設定:
+- ${PERSONA_PROMPT[persona]}
 
 ルール:
 - 必ず日本語で回答してください
 - 必ず「${stanceLabel}」の立場を一貫して守ってください
 - 論理的で説得力のある議論を展開してください
 - 倫理的、実用的、経済的、革新的など多角的な観点を活用してください
-- 200〜400文字程度で簡潔にまとめてください
+- ${VOLUME_PROMPT[volume]}
 - 相手への敬意を保ちつつ、自分の立場を明確に主張してください`;
 }
 
@@ -110,6 +135,8 @@ export class DebateAgent extends BaseAgent {
 
     const phase = action === 'debate-argue' ? 'argue' : 'rebut';
     const opponentArgument = params?.opponentArgument as string | undefined;
+    const persona = (params?.persona as Persona) || 'adult';
+    const volume = (params?.volume as Volume) || 'unlimited';
 
     // Try LLM first, fall back to templates
     let text: string;
@@ -119,7 +146,7 @@ export class DebateAgent extends BaseAgent {
 
     if (llmAvailable) {
       try {
-        text = await this.generateWithLLM(topic, phase, opponentArgument);
+        text = await this.generateWithLLM(topic, phase, opponentArgument, persona, volume);
         usedLLM = true;
       } catch (error) {
         console.warn(`[${this.config.name}] LLM failed, using template fallback:`, error);
@@ -159,9 +186,11 @@ export class DebateAgent extends BaseAgent {
   private async generateWithLLM(
     topic: string,
     phase: 'argue' | 'rebut',
-    opponentArgument?: string
+    opponentArgument?: string,
+    persona: Persona = 'adult',
+    volume: Volume = 'unlimited',
   ): Promise<string> {
-    const systemPrompt = buildDebateSystemPrompt(this.config.name, this.stance);
+    const systemPrompt = buildDebateSystemPrompt(this.config.name, this.stance, persona, volume);
     const stanceLabel = STANCE_LABEL[this.stance];
 
     let userPrompt: string;
@@ -178,7 +207,7 @@ export class DebateAgent extends BaseAgent {
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.8,
-      maxTokens: 500,
+      maxTokens: volume === 'concise' ? 250 : 500,
     });
 
     return response;
